@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+backend/build/
+backend/dist/
+
+# Gleam
+frontend/build/
+frontend/dist/
+
+# Rust / Cargo
+tauri/target/
+tauri/gen/
+
+# Tauri sidecar binaries (built via just sidecar-build)
+tauri/binaries/
+
+# Conda / env
+.env
+environment.yml.orig
+
+# Erlang
+erl_crash.dump
+*.beam
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log   
