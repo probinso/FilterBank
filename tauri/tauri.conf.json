@@ -1,0 +1,10 @@
+{
+  "productName": "filterbank",
+  "version": "0.0.0",
+  "identifier": "com.example.filterbank",
+  "build": {
+    "devUrl": "http://localhost:1234",
+    "frontendDist": "../frontend/dist"
+  },
+  "app": { "windows": [{"title": "FilterBank", "width": 1000, "height": 700 }] }
+}   

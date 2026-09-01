@@ -1,0 +1,1 @@
+import { main } from '../../build/dev/javascript/main/main.mjs'; main();

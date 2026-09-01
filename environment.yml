@@ -1,0 +1,33 @@
+name: filterbank
+channels:
+  - conda-forge
+dependencies:
+  # Python
+  - python=3.14
+  - pip~=26.2.1
+  
+  # Core backend
+  - fastapi~=0.141.1
+  - uvicorn~=0.52.4
+  - pydantic~=2.13.5
+  
+  # Erlang and Gleam
+  - erlang~=29.0.0
+  - gleam~=1.18.1
+  
+  # Development tools
+  - black
+  - ruff
+  - mypy
+
+  # Build tools
+  - rust~=1.98.0
+  - pkg-config~=0.29.2
+  - pyinstaller~=6.22.2
+
+  # System dependencies for Tauri
+  - openssl~=3.6.4
+  - sqlite~=3.53.4
+
+  - pip:
+    - pydantic-settings==2.15.0
