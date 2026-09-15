@@ -31,3 +31,4 @@ dependencies:
 
   - pip:
     - pydantic-settings==2.15.0
+    - fastapi-events==0.12.2

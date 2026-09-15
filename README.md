@@ -5,17 +5,26 @@ Minimal three-tier architecture: Tauri desktop shell → Luster frontend → Fas
 ## Structure
 
 ```
-├── backend/              # Python FastAPI server
-│   ├── api/             # API handlers and routes
-│   ├── main.py          # FastAPI app entry
-│   ├── config.py        # Settings
-│   └── requirements.txt
-├── frontend-luster/      # Luster/WASM frontend
-│   ├── src/
-│   └── Cargo.toml
-└── tauri-app/           # Tauri desktop shell
-    ├── src-tauri/       # Rust code (minimal)
-    └── tauri.conf.json
+.
+|-- backend
+|   |-- api
+|   |-- backend.spec
+|   |-- config.py
+|   `-- main.py
+|-- environment.yml  # filterbank
+|-- frontend
+|   |-- assets
+|   |-- gleam.toml
+|   |-- manifest.toml
+|   `-- src
+|-- justfile
+|-- LICENSE.txt
+|-- README.md
+`-- tauri
+    |-- binaries
+    |-- build.rs
+    |-- src
+    `-- tauri.conf.json
 ```
 
 ## Development
@@ -25,35 +34,8 @@ Minimal three-tier architecture: Tauri desktop shell → Luster frontend → Fas
 Using conda (includes Python, Erlang, Gleam, and all dependencies):
 ```bash
 just env-create
-conda activate project
+conda activate filterbank
 just install
-```
-
-Or manually:
-```bash
-conda env create -f environment.yml
-conda activate project
-cd backend && pip install -r requirements.txt
-```
-
-### Backend
-```bash
-cd backend
-uvicorn main:app --reload
-```
-
-Runs on `http://localhost:8000`
-
-### Frontend
-```bash
-cd frontend-luster
-wasm-pack build --target web
-```
-
-### Tauri App
-```bash
-cd tauri-app
-cargo tauri dev
 ```
 
 ## Usage with Just
@@ -85,12 +67,3 @@ just tauri-build
 
 Single return principle, type annotations throughout, minimal dependencies.
 
-## Conda Environment
-
-`environment.yml` includes:
-- Python 3.12
-- Erlang 27
-- Gleam
-- FastAPI, Uvicorn, Pydantic
-- Rust + Cargo (for frontend/Tauri builds)
-- Dev tools: black, ruff, mypy
