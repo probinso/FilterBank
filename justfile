@@ -70,12 +70,13 @@ format: format-backend format-rust
 
 [group('lint'), working-directory('backend')]
 check-backend:
-    python -m compileall -q .
-    black --check .
+    ruff check .
+    ruff format --check .
 
 [group('lint'), working-directory('backend')]
 format-backend:
-    black .
+    ruff check --fix .
+    ruff format .
 
 [group('lint'), working-directory('tauri')]
 check-rust:

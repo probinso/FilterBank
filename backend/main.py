@@ -1,14 +1,13 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+import functools
+import sys
+import time
 from contextlib import asynccontextmanager
 
 from api.routes import router
 from config import Settings
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
-import sys
-import time
-import functools
 
 settings = Settings()
 
@@ -22,7 +21,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 event_handler_id: int = id(app)
-
 
 
 app.add_middleware(
@@ -41,9 +39,11 @@ def called(func, slow: bool = True):
     def wrapper(*args, **kwargs):
         print(func.__name__, file=sys.stderr)
         if slow:
-            time.sleep(.5)
+            time.sleep(0.5)
         return func(*args, **kwargs)
+
     return wrapper
+
 
 @app.get("/health")
 @called
@@ -65,11 +65,14 @@ def registered_endpoint_event(app, method: str, end_point: str):
         def wrapper(*args, **kwargs):
             events.append(end_point)
             return func(*args, **kwargs)
+
         assert end_point not in registry
         registry[end_point] = wrapper
         getattr(app, method)(end_point)(wrapper)  # register the route
         return wrapper
+
     return decorator
+
 
 @app.post("/counter/replay")
 @called
