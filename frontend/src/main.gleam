@@ -2,6 +2,10 @@ import gleam/dynamic/decode
 import gleam/http/request
 import gleam/int
 import gleam/json
+import gleam/list
+import gleam/option
+import gleam/result
+import gleam/uri.{type Uri}
 import lustre
 import lustre/attribute
 import lustre/component
@@ -10,6 +14,7 @@ import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
 import lustre/server_component
+import modem
 import rsvp
 
 pub fn main() {
@@ -18,17 +23,36 @@ pub fn main() {
   Nil
 }
 
+fn q(
+  uri: Uri,
+  key: String,
+  default: a,
+  parse: fn(String) -> Result(a, b),
+) -> a {
+  uri.query
+  |> option.map(uri.parse_query)
+  |> option.map(fn(r) { result.unwrap(r, []) })
+  |> option.unwrap([])
+  |> list.key_find(key)
+  |> result.map(parse)
+  |> result.map(fn(r) { result.unwrap(r, default) })
+  |> result.unwrap(default)
+}
+
 type Model {
   Model(count: Int, loading: Bool)
 }
 
 fn init(_) {
-  #(Model(count: 0, loading: False), effect.none())
+  let assert Ok(uri) = modem.initial_uri()
+  let count = q(uri, "start", 0, int.parse)
+  #(Model(count: count, loading: False), effect.none())
 }
 
 type Msg {
   CountInc
   CountDec
+  CountReplay
   CountResponse(Result(Int, rsvp.Error(String)))
 }
 
@@ -41,6 +65,10 @@ fn update(model: Model, msg: Msg) {
     CountDec -> #(
       Model(..model, loading: True),
       send_count(model.count, "/api/counter/dec"),
+    )
+    CountReplay -> #(
+      Model(..model, loading: True),
+      send_count(model.count, "/api/counter/replay"),
     )
     CountResponse(Ok(count)) -> #(
       Model(count: count, loading: False),
@@ -56,6 +84,10 @@ fn view(model: Model) -> Element(Msg) {
     False -> "Ready"
   }
   html.div([], [
+    html.button(
+      [event.on_click(CountReplay), attribute.disabled(model.loading)],
+      [html.text("replay")],
+    ),
     html.p([], [html.text(status)]),
     html.button([event.on_click(CountDec), attribute.disabled(model.loading)], [
       html.text("-"),

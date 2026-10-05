@@ -1,7 +1,5 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_events.middleware import EventHandlerASGIMiddleware
-from fastapi_events.handlers.local import local_handler
 from contextlib import asynccontextmanager
 
 from api.routes import router
@@ -23,6 +21,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+event_handler_id: int = id(app)
+
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,10 +31,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)
-app.add_middleware(
-    EventHandlerASGIMiddleware,
-    handlers=[local_handler]
 )
 
 app.include_router(router)
@@ -58,13 +55,37 @@ class CountRequest(BaseModel):
     count: int
 
 
-@app.post("/counter/inc")
+registry: dict[str, callable] = {}
+events = []
+
+
+def registered_endpoint_event(app, method: str, end_point: str):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            events.append(end_point)
+            return func(*args, **kwargs)
+        assert end_point not in registry
+        registry[end_point] = wrapper
+        getattr(app, method)(end_point)(wrapper)  # register the route
+        return wrapper
+    return decorator
+
+@app.post("/counter/replay")
+@called
+def replay(req: CountRequest):
+    for e in events:
+        req = registry[e](req)
+    return req
+
+
+@registered_endpoint_event(app, "post", "/counter/inc")
 @called
 def increment(req: CountRequest):
-    return {"count": req.count + 1}
+    return CountRequest(count=req.count + 1)
 
 
-@app.post("/counter/dec")
+@registered_endpoint_event(app, "post", "/counter/dec")
 @called
 def decrement(req: CountRequest):
-    return {"count": req.count - 1}
+    return CountRequest(count=req.count - 1)
